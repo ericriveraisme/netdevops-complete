@@ -30,17 +30,56 @@ All production and development scripts are managed from:
 
 ### Production/Lab Environment
 - Location: `/home/vboxuser64/netdevops-project2/unified/project2-monitoring/`
-- Virtual Env: `venv/`
+- Virtual Env: `venv/` (only for ad-hoc Python scripts; see "When to use venv" below)
 - Configuration: `.env`
 - Docker Compose: `docker-compose.yml` (Project 1 NetBox + Project 2 monitoring)
 
 ### Testing/Staging Environment
 - Location: `/home/vboxuser64/netdevops-project2/unified/project2-monitoring/tests/staging/`
-- Virtual Env: `tests/staging/venv_test/`
+- Virtual Env: `tests/staging/venv_test/` (only for isolated test code; see "When to use venv" below)
 - Configuration: `tests/staging/.env.test`
 - Docker Compose: `tests/staging/docker-compose.test.yml`
 - Lock File: `tests/staging/.test_lock` (prevents concurrent runs)
 - Logs: `tests/staging/test.log`
+
+## When to Use venv (Orchestration vs. Ad-hoc Work)
+
+### ❌ DO NOT use venv for orchestration scripts
+**Scripts that manage the lab (no venv needed):**
+- `lab-up.sh` - Run bare from canonical location
+- `shutdown_lab.sh` - Run bare from canonical location
+
+These are pure bash scripts that control Docker and systemd. Run them directly:
+```bash
+cd /home/vboxuser64/netdevops-project2/unified/project2-monitoring
+./lab-up.sh
+./shutdown_lab.sh
+```
+
+### ✅ USE venv only for ad-hoc Python utilities
+**When you need to run Python code directly (use venv):**
+- `demo_device_manager.py` - Controlling device state manually
+- `add_audit_fields.py` - Bulk operations on devices
+- `csv_import.py` - Data imports or one-off scripts
+- Any new utility scripts you write
+
+**Example workflow:**
+```bash
+cd /home/vboxuser64/netdevops-project2/unified/project2-monitoring
+source venv/bin/activate                    # Activate venv
+python demo_device_manager.py status        # Run utility
+python add_audit_fields.py --help           # Ad-hoc script
+deactivate                                  # Exit venv
+```
+
+### ✅ Systemd service auto-handles Python environment
+**The `health_poller.py` (running via systemd) does NOT require manual venv activation:**
+- Systemd service manages Python environment internally
+- Service config in `systemd/net-poller.service` specifies the full path
+- Started/stopped via `./lab-up.sh` and `./shutdown_lab.sh`
+- Logs viewable via: `journalctl -u net-poller -f`
+
+**You don't activate venv to start the poller—the scripts do that automatically.**
 
 ## Concurrent Execution Prevention
 
@@ -148,14 +187,18 @@ unified/project2-monitoring/
 
 ✅ **DO:**
 - Use unified repo canonical scripts only
-- Use systemd service for auto-restart
+- Run `lab-up.sh` and `shutdown_lab.sh` bare (no venv needed)
+- Activate venv only when running ad-hoc Python utilities (`demo_device_manager.py`, `add_audit_fields.py`, etc.)
+- Use systemd service for auto-restart (`health_poller.py` runs via `net-poller.service`)
 - Use staging environment for code review
 - Check lock file before running tests
 - Archive old data periodically
 
 ❌ **DON'T:**
 - Run scripts directly from root or legacy folders
-- Start health_poller with `nohup` (use systemd)
+- Try to manually start `health_poller.py`—use `lab-up.sh` (which starts systemd service)
+- Activate venv to run `lab-up.sh` or `shutdown_lab.sh`
+- Start health_poller with `nohup` (use systemd via `lab-up.sh`)
 - Run testing without lock file
 - Mix .env files (use .env for prod, .env.test for staging)
 - Commit test data to main repo
