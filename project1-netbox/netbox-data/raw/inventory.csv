@@ -1,0 +1,4 @@
+hostname,status,site,role
+CORE-SW-01,active,Main-Office,Core-Switch
+DIST-SW-02,active,Main-Office,Distribution-Switch
+EDGE-RTR-01,offline,Remote-Branch,Edge-Router

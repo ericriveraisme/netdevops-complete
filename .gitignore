@@ -1,0 +1,146 @@
+# ============================================
+# Environment & Secrets
+# ============================================
+.env
+.env.local
+.env.*.local
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+!.env.example
+
+# ============================================
+# Terraform
+# ============================================
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# ============================================
+# Python
+# ============================================
+venv/
+env/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.ruff_cache/
+
+# ============================================
+# IDEs & Editors
+# ============================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.project
+.pydevproject
+.settings/
+*.sublime-workspace
+*.sublime-project
+
+# ============================================
+# Ansible
+# ============================================
+*.retry
+hosts.ini
+
+# ============================================
+# Kubernetes & Docker
+# ============================================
+kubeconfig.yaml
+kubeconfig
+.kube/
+docker-compose.override.yml
+
+# ============================================
+# Logs & Temporary Files
+# ============================================
+*.log
+*.pot
+*.mo
+/site
+.webassets-cache
+instance/
+.scrapy
+docs/_build/
+target/
+.ipynb_checkpoints
+.jupyterlab-settings
+.env.vault
+*.bak
+
+# ============================================
+# OS Files
+# ============================================
+Thumbs.db
+thumbs.db
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
+
+# ============================================
+# GCP/Cloud (if used later)
+# ============================================
+gcloud-service-key.json
+credentials.json
+
+# ============================================
+# Project-Specific Ignores
+# ============================================
+/project2-monitoring/.env
+/project2-monitoring/venv/
+/project2-monitoring/__pycache__/
+/oracle-cloud/*.tfstate*
+/oracle-cloud/.terraform/
