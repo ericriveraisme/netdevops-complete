@@ -1,0 +1,28 @@
+[Unit]
+Description=NetDevOps Health Poller - ICMP monitoring for NetBox devices
+Documentation=file:///home/vboxuser64/netdevops-project2/unified/project2-monitoring/SCRIPT_MANAGEMENT.md
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=vboxuser64
+WorkingDirectory=/home/vboxuser64/netdevops-project2/unified/project2-monitoring
+Environment="PATH=/home/vboxuser64/netdevops-project2/unified/project2-monitoring/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin"
+EnvironmentFile=/home/vboxuser64/netdevops-project2/unified/project2-monitoring/.env
+ExecStart=/home/vboxuser64/netdevops-project2/unified/project2-monitoring/venv/bin/python /home/vboxuser64/netdevops-project2/unified/project2-monitoring/health_poller.py
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=net-poller
+
+# Safety: Kill any orphaned processes after 10 seconds
+KillMode=process
+TimeoutStopSec=10
+
+# Run with nice priority to prevent CPU hogging
+Nice=10
+
+[Install]
+WantedBy=multi-user.target

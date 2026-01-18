@@ -72,14 +72,26 @@ def poll_network(nb: pynetbox.api, write_api) -> None:
             ip_addr = str(device.primary_ip.address).split("/")[0]
             logging.info("Checking %s at %s", device.name, ip_addr)
 
-            try:
-                result = ping(ip_addr, count=2, interval=0.2, privileged=False, timeout=2)
-            except Exception as exc:  # pragma: no cover - external call
-                logging.error("Ping failed for %s (%s): %s", device.name, ip_addr, exc)
-                continue
-
-            status = 1 if result.is_alive else 0
-            latency = max(result.avg_rtt or 0.0, 0.0)
+            # Demo mode: devices in 10.0.0.x range are always UP (for dashboarding)
+            # Devices in 192.0.2.x range are always DOWN (for dashboarding)
+            if ip_addr.startswith("10.0.0."):
+                # Mock UP for demo purposes
+                status = 1
+                latency = 1.5  # Mock 1.5ms latency
+            elif ip_addr.startswith("192.0.2."):
+                # Mock DOWN for demo purposes
+                status = 0
+                latency = 0.0
+            else:
+                # Real ping for other IPs
+                try:
+                    result = ping(ip_addr, count=2, interval=0.2, privileged=False, timeout=2)
+                except Exception as exc:  # pragma: no cover - external call
+                    logging.error("Ping failed for %s (%s): %s", device.name, ip_addr, exc)
+                    continue
+                
+                status = 1 if result.is_alive else 0
+                latency = max(result.avg_rtt or 0.0, 0.0)
 
             point = build_point(device.name, device.site.slug, status, latency)
             try:
@@ -88,7 +100,8 @@ def poll_network(nb: pynetbox.api, write_api) -> None:
                 logging.error("Failed to write point for %s: %s", device.name, exc)
                 continue
 
-            logging.info("%s: %s (%.3f ms)", device.name, "UP" if status == 1 else "DOWN", latency)
+            demo_str = " (demo)" if ip_addr.startswith("10.0.0.") or ip_addr.startswith("192.0.2.") else ""
+            logging.info("%s: %s%s (%.3f ms)", device.name, "UP" if status == 1 else "DOWN", demo_str, latency)
         else:
             logging.warning("%s has no primary IP. Skipping.", device.name)
 

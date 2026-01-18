@@ -1,5 +1,7 @@
 # Local Environment Secrets
 .env
+.env.local
+.secrets/
 
 # Python Virtual Environment
 venv/

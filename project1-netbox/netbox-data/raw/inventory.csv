@@ -1,4 +1,4 @@
-hostname,status,site,role
-CORE-SW-01,active,Main-Office,Core-Switch
-DIST-SW-02,active,Main-Office,Distribution-Switch
-EDGE-RTR-01,offline,Remote-Branch,Edge-Router
+hostname,status,site,role,ip
+CORE-SW-01,active,Main-Office,Core-Switch,100.89.136.10/32
+DIST-SW-02,active,Main-Office,Distribution-Switch,100.89.136.11/32
+EDGE-RTR-01,offline,Remote-Branch,Edge-Router,100.89.136.12/32

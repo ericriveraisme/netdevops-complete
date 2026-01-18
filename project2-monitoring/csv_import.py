@@ -19,8 +19,8 @@ SITE_MAP = {
 
 # Infer device model slug if not present
 def infer_model_slug(role_slug: str) -> str:
-    if role_slug.endswith('router'):
-        return 'generic-router'
+    # Use a known existing device type slug to avoid missing-slug errors
+    # Adjust later if NetBox has specific types provisioned
     return 'generic-switch'
 
 # Transform a CSV row into payload expected by provision_device_idempotent

@@ -109,8 +109,13 @@ docker-compose.override.yml
 .webassets-cache
 instance/
 .scrapy
-docs/_build/
-target/
+# Local Environment Secrets
+.env
+.env.local
+.secrets/
+**/.env
+**/.env.local
+**/.secrets/
 .ipynb_checkpoints
 .jupyterlab-settings
 .env.vault

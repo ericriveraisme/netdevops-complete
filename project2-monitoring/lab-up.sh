@@ -1,42 +1,82 @@
 #!/bin/bash
-# Lab Startup Script
+# Lab Startup Script - NetDevOps Project 2
 # Brings all services online (NetBox, monitoring stack, poller)
 # 
+# CANONICAL LOCATION: /home/vboxuser64/netdevops-project2/unified/project2-monitoring/lab-up.sh
+# DO NOT RUN FROM: ~/netdevops-project2/lab-up.sh or ~/netdevops-complete/lab-up.sh
+#
 # FUTURE ENHANCEMENTS:
 # - Add --init flag to run initialization (create buckets, provision Grafana)
 # - Add health check loop to verify all services are ready before starting poller
 # - Add --verify flag to run smoke tests after startup
 # - Add startup time tracking and progress indicators
-# - Consider rolling startup delays to stagger service startup load
 
-echo "🚀 Starting NetDevOps Lab..."
+set -e  # Exit on any error
+
+CANONICAL_DIR="/home/vboxuser64/netdevops-project2/unified/project2-monitoring"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Safety check: Ensure we're running from canonical location
+if [ "$SCRIPT_DIR" != "$CANONICAL_DIR" ]; then
+    echo "❌ ERROR: lab-up.sh must be run from canonical location:"
+    echo "   Expected: $CANONICAL_DIR/lab-up.sh"
+    echo "   Found at: $SCRIPT_DIR/lab-up.sh"
+    echo ""
+    echo "Please use:"
+    echo "   cd $CANONICAL_DIR && ./lab-up.sh"
+    exit 1
+fi
+
+echo "🚀 Starting NetDevOps Lab from canonical location..."
 
 # 1. Start Project 1 Containers (NetBox)
 echo "--- Starting NetBox Source of Truth ---"
-# NOTE: Waiting for NetBox to be ready before starting dependent services
 cd ~/netbox-docker && docker compose up -d
 echo "✅ NetBox Stack Started. Waiting for API to be ready..."
-sleep 10  # Allow NetBox time to initialize
+sleep 10
 
 # 2. Start Project 2 Containers (Monitoring)
 echo "--- Starting InfluxDB & Grafana ---"
-# NOTE: Using `docker compose up -d` to start background services.
-# FUTURE: Health check loop to verify InfluxDB is responding before starting poller
-cd ~/netdevops-project2 && docker compose up -d
+cd "$CANONICAL_DIR" && docker compose up -d
 echo "✅ Monitoring Stack Started. Waiting for initialization..."
-sleep 10  # Allow InfluxDB/Grafana to initialize
+sleep 10
 
-# 3. Start the ICMP Poller (System Service)
-echo "--- Starting Python Poller Service ---"
-# Reload systemd daemon to ensure fresh service config (prevents "changed on disk" warnings)
+# 3. Start the ICMP Poller (System Service - prevents duplicates and enables auto-restart)
+echo "--- Starting Python Poller Service (via systemd) ---"
+
+# Kill any orphaned health_poller processes from old methods
+pkill -9 -f "health_poller.py" || true
+
+# Copy systemd service file
+sudo cp "$CANONICAL_DIR/systemd/net-poller.service" /etc/systemd/system/
 sudo systemctl daemon-reload
-# FUTURE: Verify InfluxDB health before starting to prevent early connection errors
-sudo systemctl start net-poller.service
-echo "✅ Poller Started."
 
+# Start or restart service
+sudo systemctl restart net-poller.service
+sleep 2
+
+# Verify service started
+if sudo systemctl is-active --quiet net-poller.service; then
+    echo "✅ Poller Service Started (auto-restart enabled on reboot)."
+else
+    echo "⚠️  Poller service failed to start. Check logs with:"
+    echo "   journalctl -u net-poller -f"
+    exit 1
+fi
+
+echo ""
 echo "---------------------------------------"
 echo "✨ All services are online!"
-echo "Check status anytime with: docker ps"
-echo "View poller logs: journalctl -u net-poller -f"
-echo "Grafana: http://localhost:3000"
-# FUTURE: Add optional verification loop to confirm all services are healthy
+echo ""
+echo "📊 Access points:"
+echo "   NetBox:  http://localhost:8000  (admin/admin)"
+echo "   Grafana: http://localhost:3000  (admin/admin)"
+echo ""
+echo "📋 Useful commands:"
+echo "   View poller logs:  journalctl -u net-poller -f"
+echo "   Service status:    sudo systemctl status net-poller"
+echo "   Restart poller:    sudo systemctl restart net-poller"
+echo "   Container status:  docker ps"
+echo ""
+echo "⚠️  To use demo device manager:"
+echo "   cd $CANONICAL_DIR && python demo_device_manager.py [up|down|random|status]"

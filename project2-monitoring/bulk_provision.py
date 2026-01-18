@@ -60,22 +60,26 @@ def provision_device_idempotent(data: Dict[str, str]) -> None:
             type='virtual'
         )
 
-    # 4. IP ADDRESS: Ensure IP exists and is linked
-    ip_addr = nb.ipam.ip_addresses.get(address=data["ip"])
-    if not ip_addr:
-        ip_addr = nb.ipam.ip_addresses.create(
-            address=data["ip"],
-            assigned_object_type='dcim.interface',
-            assigned_object_id=interface.id,
-            status='active'
-        )
-    
-    # 5. SET PRIMARY: Ensure the pointer is correct
-    if not device.primary_ip4 or device.primary_ip4.id != ip_addr.id:
-        device.update({'primary_ip4': ip_addr.id})
-        logging.info("%s is now live and set as primary.", data["name"])
+    # 4. IP ADDRESS (Optional): Ensure IP exists and is linked
+    ip_value = data.get("ip")
+    if ip_value:
+        ip_addr = nb.ipam.ip_addresses.get(address=ip_value)
+        if not ip_addr:
+            ip_addr = nb.ipam.ip_addresses.create(
+                address=ip_value,
+                assigned_object_type='dcim.interface',
+                assigned_object_id=interface.id,
+                status='active'
+            )
+
+        # 5. SET PRIMARY: Ensure the pointer is correct
+        if not device.primary_ip4 or device.primary_ip4.id != ip_addr.id:
+            device.update({'primary_ip4': ip_addr.id})
+            logging.info("%s is now live and set as primary.", data["name"]) 
+        else:
+            logging.info("%s configuration is already correct.", data["name"]) 
     else:
-        logging.info("%s configuration is already correct.", data["name"])
+        logging.info("No IP provided for %s; device created without primary IP.", data["name"]) 
 
 if __name__ == "__main__":
     for entry in new_devices:
