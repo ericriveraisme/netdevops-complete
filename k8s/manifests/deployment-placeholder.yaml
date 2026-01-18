@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: netdevops-placeholder
+  namespace: netdevops
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: netdevops-placeholder
+  template:
+    metadata:
+      labels:
+        app: netdevops-placeholder
+    spec:
+      containers:
+      - name: placeholder
+        image: nginx:1.25-alpine
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 128Mi

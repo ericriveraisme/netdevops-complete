@@ -1,0 +1,35 @@
+# Remote State Backend (example)
+# Choose one backend and fill values, then rename to backend.tf locally.
+# Do NOT commit real backend credentials.
+
+# Option A: Terraform Cloud/Enterprise
+#terraform {
+#  backend "remote" {
+#    organization = "your-org"
+#    workspaces {
+#      name = "netdevops-oci"
+#    }
+#  }
+#}
+
+# Option B: S3-compatible (e.g., OCI Object Storage with S3 API)
+#terraform {
+#  backend "s3" {
+#    bucket                      = "your-oci-bucket"
+#    key                         = "state/netdevops-oci.tfstate"
+#    region                      = "us-ashburn-1"
+#    endpoint                    = "https://your-namespace.compat.objectstorage.us-ashburn-1.oraclecloud.com"
+#    access_key                  = ""
+#    secret_key                  = ""
+#    skip_credentials_validation = true
+#    skip_region_validation      = true
+#    force_path_style            = true
+#  }
+#}
+
+# Option C: Local (development only)
+#terraform {
+#  backend "local" {
+#    path = "./terraform.tfstate"
+#  }
+#}
